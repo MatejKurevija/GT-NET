@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/22.2.8/css/dx.light.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn3.devexpress.com/jslib/22.2.8/js/dx.all.js"></script>
+    <style>
+        #gridContainer {
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gridContainer"></div>
+    <script>
+        $(function () {
+            $("#gridContainer").dxDataGrid({
+                dataSource: {
+                    load: function () {
+                        return $.getJSON("http://localhost:8000/users")
+                            .fail(function (jqXHR, textStatus, errorThrown) {
+                                console.error('Load failed:', textStatus, errorThrown);
+                            });
+                    },
+                    insert: function (values) {
+                        values.created_at = new Date();
+                        return $.ajax({
+                            url: "http://localhost:8000/users",
+                            method: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify(values)
+                        }).done(function () {
+                            console.log('Insert successful');
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            console.error('Insert failed:', textStatus, errorThrown);
+                        });
+                    },
+                    update: function (key, values) {
+                        return $.ajax({
+                            url: `http://localhost:8000/users/${key.id}`,
+                            method: "PUT",
+                            contentType: "application/json",
+                            data: JSON.stringify(values)
+                        }).done(function () {
+                            console.log('Update successful');
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            console.error('Update failed:', textStatus, errorThrown);
+                        });
+                    },
+                    remove: function (key) {
+                        return $.ajax({
+                            url: `http://localhost:8000/users/${key.id}`,
+                            method: "DELETE"
+                        }).done(function () {
+                            console.log('Delete successful');
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            console.error('Delete failed:', textStatus, errorThrown);
+                        });
+                    }
+                },
+                columns: [
+                    { dataField: "id", caption: "ID", allowEditing: false },
+                    { dataField: "name", caption: "Name", validationRules: [{ type: "required" }], allowEditing: true },
+                    { dataField: "surname", caption: "Surname", validationRules: [{ type: "required" }], allowEditing: true },
+                    { dataField: "email", caption: "Email", validationRules: [{ type: "required" }, { type: "email" }], allowEditing: true },
+                    {
+                        dataField: "phone", caption: "Phone", validationRules: [
+                            { type: "pattern", pattern: /^[0-9]+$/, message: "Phone number must contain only numbers" }
+                        ]
+                    },
+                    { dataField: "created_at", caption: "Created At", dataType: "date", allowEditing: false }
+                ],
+                editing: {
+                    mode: "row",
+                    allowUpdating: true,
+                    allowAdding: true,
+                    allowDeleting: true
+                },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [5, 10, 20],
+                    showInfo: true
+                },
+                paging: {
+                    pageSize: 10
+                },
+                filterRow: {
+                    visible: true
+                },
+                searchPanel: {
+                    visible: true
+                },
+                summary: {
+                    totalItems: [{
+                        column: "id",
+                        summaryType: "count",
+                        displayFormat: "Total Users: {0}"
+                    }]
+                }
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
