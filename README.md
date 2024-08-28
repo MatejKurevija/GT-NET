@@ -1,6 +1,4 @@
-Naravno, ovdje je README datoteka koja detaljno opisuje kako pokrenuti projekt:
 
----
 
 # CRUD Aplikacija za Upravljanje Korisnicima
 
